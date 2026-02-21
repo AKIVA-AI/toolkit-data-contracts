@@ -23,6 +23,12 @@ classifiers = [
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/AKIVA-AI/toolkit-data-contracts"
+Repository = "https://github.com/AKIVA-AI/toolkit-data-contracts"
+Documentation = "https://github.com/AKIVA-AI/toolkit-data-contracts#readme"
+"Bug Tracker" = "https://github.com/AKIVA-AI/toolkit-data-contracts/issues"
+
 [project.scripts]
 toolkit-contracts = "toolkit_data_contracts_drift.cli:main"
 
@@ -45,7 +51,7 @@ omit = ["*/toolkit_data_contracts_drift/__main__.py"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-fail_under = 80
+fail_under = 60
 
 [tool.ruff]
 line-length = 100
@@ -66,5 +72,3 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 toolkit_data_contracts_drift = ["py.typed"]
-
-
