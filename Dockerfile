@@ -10,17 +10,13 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install
+# Copy source first
 COPY pyproject.toml .
-COPY requirements-dev.txt .
-RUN pip install --no-cache-dir -e ".[dev]"
-
-# Copy application
 COPY src/ ./src/
 COPY README.md .
 
 # Install package
-RUN pip install -e .
+RUN pip install --no-cache-dir -e . || pip install --no-cache-dir .
 
 # Create non-root user
 RUN useradd -m -u 1000 contracts && chown -R contracts:contracts /app
