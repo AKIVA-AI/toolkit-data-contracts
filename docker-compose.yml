@@ -1,0 +1,61 @@
+﻿version: '3.8'
+
+services:
+  data-contracts:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: toolkit-data-contracts
+    volumes:
+      - ./data:/app/data
+      - ./contracts:/app/contracts
+      - ./profiles:/app/profiles
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: tail -f /dev/null  # Keep container running
+    networks:
+      - contracts-network
+
+  # Example: Run contract inference
+  infer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: toolkit-contracts-infer
+    volumes:
+      - ./data:/app/data
+      - ./contracts:/app/contracts
+    command: >
+      toolkit-contracts infer
+      --input /app/data/samples.jsonl
+      --out /app/contracts/contract.json
+    networks:
+      - contracts-network
+    profiles:
+      - tools
+
+  # Example: Run drift check
+  check:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: toolkit-contracts-check
+    volumes:
+      - ./data:/app/data
+      - ./contracts:/app/contracts
+      - ./profiles:/app/profiles
+    command: >
+      toolkit-contracts check
+      --input /app/data/new_batch.jsonl
+      --contract /app/contracts/contract.json
+      --baseline /app/profiles/baseline.profile.json
+    networks:
+      - contracts-network
+    profiles:
+      - tools
+
+networks:
+  contracts-network:
+    driver: bridge
+
+
