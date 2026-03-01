@@ -41,7 +41,9 @@ def test_infer_profile_and_check_pass(tmp_path: Path) -> None:
     )
 
     new_batch = tmp_path / "new.jsonl"
-    _write_jsonl(new_batch, [{"country": "US", "age": 12}, {"country": "CA", "age": 13}])
+    _write_jsonl(
+        new_batch, [{"country": "US", "age": 12}, {"country": "CA", "age": 13}]
+    )
     assert (
         main(
             [
@@ -72,9 +74,18 @@ def test_check_fails_on_type_mismatch(tmp_path: Path) -> None:
     _write_jsonl(bad, [{"country": 123, "age": 10}])
 
     out = tmp_path / "report.json"
-    code = main(["check", "--input", str(bad), "--contract", str(contract_path), "--out", str(out)])
+    code = main(
+        [
+            "check",
+            "--input",
+            str(bad),
+            "--contract",
+            str(contract_path),
+            "--out",
+            str(out),
+        ]
+    )
     assert code == 4
     rep = read_json(out)
     assert rep["ok"] is False
     assert rep["validation_issues"]
-

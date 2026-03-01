@@ -7,7 +7,13 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from .contract import Profile, drift_check, infer_contract, profile_records, validate_records
+from .contract import (
+    Profile,
+    drift_check,
+    infer_contract,
+    profile_records,
+    validate_records,
+)
 from .io import read_json, read_jsonl, write_json
 
 logger = logging.getLogger(__name__)
@@ -209,28 +215,42 @@ def build_parser() -> argparse.ArgumentParser:
     infer = sub.add_parser("infer", help="Infer a contract from JSONL records.")
     infer.add_argument("--input", required=True, help="Input JSONL file path")
     infer.add_argument("--out", required=True, help="Output contract JSON file path")
-    infer.add_argument("--limit", default="5000", help="Max records to process (default: 5000)")
-    infer.add_argument("--disallow-extra", action="store_true", help="Disallow extra fields")
+    infer.add_argument(
+        "--limit", default="5000", help="Max records to process (default: 5000)"
+    )
+    infer.add_argument(
+        "--disallow-extra", action="store_true", help="Disallow extra fields"
+    )
     infer.set_defaults(func=_cmd_infer)
 
-    prof = sub.add_parser("profile", help="Compute a baseline profile for drift checks.")
+    prof = sub.add_parser(
+        "profile", help="Compute a baseline profile for drift checks."
+    )
     prof.add_argument("--input", required=True, help="Input JSONL file path")
     prof.add_argument("--contract", required=True, help="Contract JSON file path")
     prof.add_argument("--out", required=True, help="Output profile JSON file path")
-    prof.add_argument("--limit", default="50000", help="Max records to process (default: 50000)")
+    prof.add_argument(
+        "--limit", default="50000", help="Max records to process (default: 50000)"
+    )
     prof.set_defaults(func=_cmd_profile)
 
-    check = sub.add_parser("check", help="Validate records and optionally drift-check vs baseline.")
+    check = sub.add_parser(
+        "check", help="Validate records and optionally drift-check vs baseline."
+    )
     check.add_argument("--input", required=True, help="Input JSONL file path")
     check.add_argument("--contract", required=True, help="Contract JSON file path")
     check.add_argument("--baseline", default="", help="Baseline profile JSON file path")
-    check.add_argument("--max-missing", default="0.01", help="Max missing rate (default: 0.01)")
+    check.add_argument(
+        "--max-missing", default="0.01", help="Max missing rate (default: 0.01)"
+    )
     check.add_argument(
         "--max-mean-shift-sigma",
         default="3.0",
         help="Max mean shift sigma (default: 3.0)",
     )
-    check.add_argument("--out", default="", help="Output report file path (default: stdout)")
+    check.add_argument(
+        "--out", default="", help="Output report file path (default: stdout)"
+    )
     check.set_defaults(func=_cmd_check)
 
     return p
@@ -270,5 +290,3 @@ def main(argv: list[str] | None = None) -> int:
             file=sys.stderr,
         )
         return EXIT_UNEXPECTED_ERROR
-
-

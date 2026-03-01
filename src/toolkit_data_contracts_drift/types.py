@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Literal, TypedDict
 
-JsonScalarType = Literal["null", "boolean", "integer", "number", "string", "object", "array"]
+JsonScalarType = Literal[
+    "null", "boolean", "integer", "number", "string", "object", "array"
+]
 
 
 class FieldContract(TypedDict):

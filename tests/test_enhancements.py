@@ -199,7 +199,9 @@ def test_cli_check_contract_not_found(tmp_path: Path) -> None:
     data_file = tmp_path / "data.jsonl"
     data_file.write_text('{"test": true}\n', encoding="utf-8")
 
-    exit_code = main(["check", "--input", str(data_file), "--contract", "/nonexistent.json"])
+    exit_code = main(
+        ["check", "--input", str(data_file), "--contract", "/nonexistent.json"]
+    )
 
     assert exit_code == EXIT_CLI_ERROR
 
@@ -214,7 +216,9 @@ def test_cli_check_input_not_found(tmp_path: Path) -> None:
     }
     contract_file.write_text(json.dumps(contract), encoding="utf-8")
 
-    exit_code = main(["check", "--input", "/nonexistent.jsonl", "--contract", str(contract_file)])
+    exit_code = main(
+        ["check", "--input", "/nonexistent.jsonl", "--contract", str(contract_file)]
+    )
 
     assert exit_code == EXIT_CLI_ERROR
 
@@ -233,7 +237,9 @@ def test_cli_verbose_flag(tmp_path: Path, caplog) -> None:
 
     out_file = tmp_path / "contract.json"
 
-    exit_code = main(["--verbose", "infer", "--input", str(data_file), "--out", str(out_file)])
+    exit_code = main(
+        ["--verbose", "infer", "--input", str(data_file), "--out", str(out_file)]
+    )
 
     assert exit_code == EXIT_SUCCESS
 
@@ -262,4 +268,3 @@ def test_write_json_creates_parent_directory(tmp_path: Path) -> None:
 
     assert file_path.exists()
     assert json.loads(file_path.read_text()) == data
-

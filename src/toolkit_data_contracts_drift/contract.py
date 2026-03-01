@@ -5,7 +5,7 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import Any
 
-from .types import Contract, JsonScalarType, ValidationIssue, json_type
+from .types import Contract, FieldContract, JsonScalarType, ValidationIssue, json_type
 
 
 def infer_contract(
@@ -21,12 +21,15 @@ def infer_contract(
             present_counts[k] += 1
             field_types[k].add(json_type(v))
 
-    fields: dict[str, dict[str, Any]] = {}
+    fields: dict[str, FieldContract] = {}
     total = len(records)
     for field, types in field_types.items():
-        fields[field] = {"types": sorted(types), "required": present_counts[field] == total}
+        fields[field] = FieldContract(
+            types=sorted(types),
+            required=present_counts[field] == total,
+        )
 
-    return {"version": 1, "allow_extra_fields": bool(allow_extra_fields), "fields": fields}  # type: ignore[return-value]
+    return {"version": 1, "allow_extra_fields": bool(allow_extra_fields), "fields": fields}
 
 
 @dataclass(frozen=True)
@@ -45,7 +48,9 @@ class Profile:
         stats = obj.get("field_stats")
         if not isinstance(stats, dict):
             raise ValueError("profile_missing_field_stats")
-        return Profile(version=version, field_stats={str(k): dict(v) for k, v in stats.items()})
+        return Profile(
+            version=version, field_stats={str(k): dict(v) for k, v in stats.items()}
+        )
 
 
 def validate_records(

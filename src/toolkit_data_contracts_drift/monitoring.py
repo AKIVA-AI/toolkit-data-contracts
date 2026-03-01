@@ -12,25 +12,25 @@ from typing import Any
 
 class HealthCheck:
     """Health check utilities"""
-    
+
     @staticmethod
     def check_system() -> dict[str, Any]:
         """Check system health"""
         try:
             from . import __version__
-            
+
             return {
                 "status": "healthy",
                 "version": __version__,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
         except Exception as e:
             return {
                 "status": "unhealthy",
                 "error": str(e),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
-    
+
     @staticmethod
     def check_contract(contract_path: Path) -> dict[str, Any]:
         """Check if contract file is valid"""
@@ -39,12 +39,12 @@ class HealthCheck:
                 return {
                     "status": "not_found",
                     "path": str(contract_path),
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.utcnow().isoformat(),
                 }
-            
+
             with open(contract_path) as f:
                 contract = json.load(f)
-            
+
             required_fields = ["version", "fields"]
             missing = [f for f in required_fields if f not in contract]
 
@@ -53,7 +53,7 @@ class HealthCheck:
                     "status": "invalid",
                     "missing_fields": missing,
                     "path": str(contract_path),
-                    "timestamp": datetime.utcnow().isoformat()
+                    "timestamp": datetime.utcnow().isoformat(),
                 }
 
             return {
@@ -61,27 +61,27 @@ class HealthCheck:
                 "version": contract.get("version"),
                 "fields": len(contract.get("fields", {})),
                 "path": str(contract_path),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
         except json.JSONDecodeError as e:
             return {
                 "status": "invalid_json",
                 "error": str(e),
                 "path": str(contract_path),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
         except Exception as e:
             return {
                 "status": "error",
                 "error": str(e),
                 "path": str(contract_path),
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.utcnow().isoformat(),
             }
 
 
 class ContractMetrics:
     """Track contract and validation metrics"""
-    
+
     def __init__(self):
         self.metrics = {
             "contracts_created": 0,
@@ -91,11 +91,11 @@ class ContractMetrics:
             "drift_checks": 0,
             "drift_detected": 0,
         }
-    
+
     def record_contract_creation(self):
         """Record contract creation"""
         self.metrics["contracts_created"] += 1
-    
+
     def record_validation(self, passed: bool):
         """Record validation result"""
         self.metrics["validations_performed"] += 1
@@ -103,19 +103,20 @@ class ContractMetrics:
             self.metrics["validations_passed"] += 1
         else:
             self.metrics["validations_failed"] += 1
-    
+
     def record_drift_check(self, drift_detected: bool):
         """Record drift check result"""
         self.metrics["drift_checks"] += 1
         if drift_detected:
             self.metrics["drift_detected"] += 1
-    
+
     def get_metrics(self) -> dict[str, Any]:
         """Get current metrics"""
         return {
             **self.metrics,
             "validation_success_rate": (
-                self.metrics["validations_passed"] / self.metrics["validations_performed"]
+                self.metrics["validations_passed"]
+                / self.metrics["validations_performed"]
                 if self.metrics["validations_performed"] > 0
                 else 0.0
             ),
@@ -124,9 +125,9 @@ class ContractMetrics:
                 if self.metrics["drift_checks"] > 0
                 else 0.0
             ),
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.utcnow().isoformat(),
         }
-    
+
     def reset(self):
         """Reset all metrics"""
         for key in self.metrics:
@@ -144,14 +145,9 @@ def get_metrics() -> dict[str, Any]:
 
 def get_health_status(contract_path: Path | None = None) -> dict[str, Any]:
     """Get comprehensive health status"""
-    status = {
-        "system": HealthCheck.check_system(),
-        "metrics": get_metrics()
-    }
-    
+    status = {"system": HealthCheck.check_system(), "metrics": get_metrics()}
+
     if contract_path:
         status["contract"] = HealthCheck.check_contract(contract_path)
-    
+
     return status
-
-
