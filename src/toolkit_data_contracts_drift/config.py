@@ -3,7 +3,6 @@ Configuration management for Toolkit Data Contracts & Drift Detection
 """
 
 import os
-from typing import Optional
 
 
 class Config:
@@ -25,7 +24,7 @@ class Config:
     
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
-    LOG_FILE: Optional[str] = os.getenv("LOG_FILE")
+    LOG_FILE: str | None = os.getenv("LOG_FILE")
     
     # Performance
     BATCH_SIZE: int = int(os.getenv("BATCH_SIZE", "10000"))

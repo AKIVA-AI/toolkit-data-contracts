@@ -225,7 +225,11 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument("--contract", required=True, help="Contract JSON file path")
     check.add_argument("--baseline", default="", help="Baseline profile JSON file path")
     check.add_argument("--max-missing", default="0.01", help="Max missing rate (default: 0.01)")
-    check.add_argument("--max-mean-shift-sigma", default="3.0", help="Max mean shift sigma (default: 3.0)")
+    check.add_argument(
+        "--max-mean-shift-sigma",
+        default="3.0",
+        help="Max mean shift sigma (default: 3.0)",
+    )
     check.add_argument("--out", default="", help="Output report file path (default: stdout)")
     check.set_defaults(func=_cmd_check)
 
