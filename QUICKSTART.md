@@ -9,7 +9,7 @@ Get started with data quality monitoring in 5 minutes!
 pip install -e ".[dev]"
 
 # Verify
-toolkit-contracts --version
+toolkit-contracts --help
 ```
 
 ## ðŸ“ Basic Workflow
@@ -34,15 +34,14 @@ toolkit-contracts infer \
 **Output (`contract.json`):**
 ```json
 {
-  "version": 1,
-  "schema": {
-    "fields": {
-      "user_id": {"type": "integer", "required": true},
-      "age": {"type": "integer", "required": true},
-      "income": {"type": "number", "required": true},
-      "approved": {"type": "boolean", "required": true}
-    }
-  }
+  "allow_extra_fields": true,
+  "fields": {
+    "user_id": {"required": true, "types": ["integer"]},
+    "age": {"required": true, "types": ["integer"]},
+    "income": {"required": true, "types": ["integer"]},
+    "approved": {"required": true, "types": ["boolean"]}
+  },
+  "version": 1
 }
 ```
 
@@ -92,7 +91,7 @@ toolkit-contracts check \
 ### API Data Validation
 
 ```python
-from toolkit_data_contracts_drift.contract import validate_data
+from toolkit_data_contracts_drift.contract import validate_records
 import json
 
 # Load contract
@@ -100,9 +99,9 @@ with open("api_contract.json") as f:
     contract = json.load(f)
 
 # Validate request
-result = validate_data(request_data, contract)
-if not result["valid"]:
-    return {"error": result["errors"]}, 400
+issues = validate_records(contract=contract, records=[request_data])
+if issues:
+    return {"error": [i.message for i in issues]}, 400
 ```
 
 ### ETL Quality Gates
@@ -132,7 +131,8 @@ docker-compose run --rm data-contracts \
 docker-compose run --rm data-contracts \
   toolkit-contracts check \
   --input /app/data/new_batch.jsonl \
-  --contract /app/contracts/contract.json
+  --contract /app/contracts/contract.json \
+  --baseline /app/profiles/baseline.profile.json
 ```
 
 ## ðŸ§ª Run Examples
@@ -165,8 +165,4 @@ python examples/ml_pipeline_example.py
 
 ---
 
-**Ready to ensure data quality? Start validating now!** ðŸš€
-
-
-
-
+**Ready to ensure data quality? Start validating now!**

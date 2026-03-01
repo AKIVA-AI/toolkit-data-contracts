@@ -3,7 +3,7 @@
 ## ðŸš€ Quick Start
 
 ### Prerequisites
-- Python 3.9+
+- Python 3.10+
 - Docker & Docker Compose (optional)
 
 ### Option 1: Docker Deployment (Recommended)
@@ -16,10 +16,10 @@ cd data-contracts-drift
 docker-compose build
 
 # Run contract inference
-docker-compose run --rm infer
+docker-compose --profile tools run --rm infer
 
 # Run drift check
-docker-compose run --rm check
+docker-compose --profile tools run --rm check
 
 # Interactive shell
 docker-compose run --rm data-contracts bash
@@ -32,7 +32,7 @@ docker-compose run --rm data-contracts bash
 pip install -e ".[dev]"
 
 # Verify installation
-toolkit-contracts --version
+toolkit-contracts --help
 
 # Run tests
 pytest
@@ -56,7 +56,7 @@ See `.env.example` for all options.
 toolkit-contracts infer \
   --input data/samples.jsonl \
   --out contracts/contract.json \
-  --sample-size 1000
+  --limit 1000
 
 # Create baseline profile
 toolkit-contracts profile \
@@ -69,7 +69,7 @@ toolkit-contracts check \
   --input data/new_batch.jsonl \
   --contract contracts/contract.json \
   --baseline profiles/baseline.profile.json \
-  --threshold 0.1
+  --max-mean-shift-sigma 3.0
 ```
 
 ## ðŸ“Š Production Deployment
@@ -88,8 +88,9 @@ toolkit-contracts check \
 
 **Exit Codes:**
 - `0`: No drift detected, all validations passed
-- `1`: Drift detected or validation failures
-- `2`: Error in execution
+- `2`: CLI error (bad input, missing files)
+- `3`: Unexpected error
+- `4`: Check failed (drift detected or validation failures)
 
 ### 2. Batch Processing
 
@@ -164,13 +165,17 @@ chmod 600 profiles/*.json
 cat data/samples.jsonl | jq -c . > data/valid.jsonl
 
 # Check sample size
-toolkit-contracts infer --input data/samples.jsonl --sample-size 100
+toolkit-contracts infer --input data/samples.jsonl --out contract.json --limit 100
 ```
 
 **Drift Always Detected:**
 ```bash
-# Lower threshold
-toolkit-contracts check --threshold 0.2
+# Increase allowed sigma shift
+toolkit-contracts check \
+  --input data/batch.jsonl \
+  --contract contracts/contract.json \
+  --baseline profiles/baseline.profile.json \
+  --max-mean-shift-sigma 5.0
 
 # Check baseline profile
 cat profiles/baseline.profile.json | jq .
@@ -191,7 +196,4 @@ export MAX_WORKERS=8
 - Examples: [examples/](examples/)
 - Issues: GitHub Issues
 - Email: <support-email>
-
-
-
 

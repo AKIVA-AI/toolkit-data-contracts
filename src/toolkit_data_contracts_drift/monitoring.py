@@ -2,17 +2,19 @@
 Monitoring and health checks for Toolkit Data Contracts & Drift Detection
 """
 
+from __future__ import annotations
+
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any
 
 
 class HealthCheck:
     """Health check utilities"""
     
     @staticmethod
-    def check_system() -> Dict[str, Any]:
+    def check_system() -> dict[str, Any]:
         """Check system health"""
         try:
             from . import __version__
@@ -30,7 +32,7 @@ class HealthCheck:
             }
     
     @staticmethod
-    def check_contract(contract_path: Path) -> Dict[str, Any]:
+    def check_contract(contract_path: Path) -> dict[str, Any]:
         """Check if contract file is valid"""
         try:
             if not contract_path.exists():
@@ -43,9 +45,9 @@ class HealthCheck:
             with open(contract_path) as f:
                 contract = json.load(f)
             
-            required_fields = ["version", "schema"]
+            required_fields = ["version", "fields"]
             missing = [f for f in required_fields if f not in contract]
-            
+
             if missing:
                 return {
                     "status": "invalid",
@@ -53,11 +55,11 @@ class HealthCheck:
                     "path": str(contract_path),
                     "timestamp": datetime.utcnow().isoformat()
                 }
-            
+
             return {
                 "status": "valid",
                 "version": contract.get("version"),
-                "fields": len(contract.get("schema", {}).get("fields", {})),
+                "fields": len(contract.get("fields", {})),
                 "path": str(contract_path),
                 "timestamp": datetime.utcnow().isoformat()
             }
@@ -108,7 +110,7 @@ class ContractMetrics:
         if drift_detected:
             self.metrics["drift_detected"] += 1
     
-    def get_metrics(self) -> Dict[str, Any]:
+    def get_metrics(self) -> dict[str, Any]:
         """Get current metrics"""
         return {
             **self.metrics,
@@ -135,12 +137,12 @@ class ContractMetrics:
 _metrics = ContractMetrics()
 
 
-def get_metrics() -> Dict[str, Any]:
+def get_metrics() -> dict[str, Any]:
     """Get global metrics"""
     return _metrics.get_metrics()
 
 
-def get_health_status(contract_path: Optional[Path] = None) -> Dict[str, Any]:
+def get_health_status(contract_path: Path | None = None) -> dict[str, Any]:
     """Get comprehensive health status"""
     status = {
         "system": HealthCheck.check_system(),
