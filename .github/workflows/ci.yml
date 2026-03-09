@@ -34,7 +34,7 @@ jobs:
         pytest --cov=src/toolkit_data_contracts_drift --cov-report=xml --cov-report=term -v
     
     - name: Upload coverage
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       if: matrix.python-version == '3.11'
       with:
         file: ./coverage.xml
