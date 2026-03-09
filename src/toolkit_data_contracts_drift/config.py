@@ -32,9 +32,8 @@ class Config:
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     LOG_FILE: str | None = os.getenv("LOG_FILE")
 
-    # Performance
-    BATCH_SIZE: int = int(os.getenv("BATCH_SIZE", "10000"))
-    MAX_WORKERS: int = int(os.getenv("MAX_WORKERS", "4"))
+    # Performance (reserved for future parallel processing)
+    # BATCH_SIZE and MAX_WORKERS were removed — use CLI --limit instead
 
     # Output
     OUTPUT_FORMAT: str = os.getenv("OUTPUT_FORMAT", "json")
@@ -51,12 +50,6 @@ class Config:
 
         if cls.DEFAULT_SAMPLE_SIZE < 1:
             raise ValueError("DEFAULT_SAMPLE_SIZE must be positive")
-
-        if cls.BATCH_SIZE < 1:
-            raise ValueError("BATCH_SIZE must be positive")
-
-        if cls.MAX_WORKERS < 1:
-            raise ValueError("MAX_WORKERS must be positive")
 
         valid_log_levels = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
         if cls.LOG_LEVEL.upper() not in valid_log_levels:
@@ -77,10 +70,6 @@ class Config:
             "validation": {
                 "allow_extra_fields": cls.ALLOW_EXTRA_FIELDS,
                 "strict_type_checking": cls.STRICT_TYPE_CHECKING,
-            },
-            "performance": {
-                "batch_size": cls.BATCH_SIZE,
-                "max_workers": cls.MAX_WORKERS,
             },
             "logging": {
                 "level": cls.LOG_LEVEL,

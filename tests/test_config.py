@@ -19,8 +19,6 @@ class TestConfigValidate:
         "ALLOW_EXTRA_FIELDS": "false",
         "STRICT_TYPE_CHECKING": "true",
         "LOG_LEVEL": "INFO",
-        "BATCH_SIZE": "10000",
-        "MAX_WORKERS": "4",
         "OUTPUT_FORMAT": "json",
         "VERBOSE": "false",
     }
@@ -97,14 +95,6 @@ class TestConfigValidate:
             "DEFAULT_SAMPLE_SIZE",
         )
 
-    def test_validate_batch_size_zero(self):
-        """Batch size of 0 raises ValueError."""
-        self._reload_expecting_error({"BATCH_SIZE": "0"}, "BATCH_SIZE")
-
-    def test_validate_max_workers_zero(self):
-        """Max workers of 0 raises ValueError."""
-        self._reload_expecting_error({"MAX_WORKERS": "0"}, "MAX_WORKERS")
-
     def test_validate_invalid_log_level(self):
         """Invalid log level raises ValueError."""
         self._reload_expecting_error({"LOG_LEVEL": "TRACE"}, "LOG_LEVEL")
@@ -139,7 +129,6 @@ class TestConfigGetConfigDict:
         assert "inference" in d
         assert "drift_detection" in d
         assert "validation" in d
-        assert "performance" in d
         assert "logging" in d
 
     def test_get_config_dict_default_values(self):
@@ -152,8 +141,6 @@ class TestConfigGetConfigDict:
         assert d["drift_detection"]["statistical_tests"] is True
         assert d["validation"]["allow_extra_fields"] is False
         assert d["validation"]["strict_type_checking"] is True
-        assert d["performance"]["batch_size"] == 10000
-        assert d["performance"]["max_workers"] == 4
         assert d["logging"]["level"] == "INFO"
 
     def test_get_config_dict_custom_env_vars(self):

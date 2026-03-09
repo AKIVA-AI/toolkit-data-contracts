@@ -32,8 +32,8 @@ The Toolkit Data Contracts and Drift Detection tool provides a lightweight, depe
 
 ```bash
 # Install from source
-git clone <your-repo-url>
-cd data-contracts-drift
+git clone https://github.com/AKIVA-AI/toolkit-data-contracts.git
+cd toolkit-data-contracts
 pip install -e ".[dev]"
 
 # Install in production

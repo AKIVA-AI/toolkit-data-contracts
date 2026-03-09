@@ -53,10 +53,8 @@ jobs:
       run: pip install bandit safety
     - name: Run Bandit
       run: bandit -r src/ -f json -o bandit-report.json
-      continue-on-error: true
     - name: Run Safety
       run: safety check --json
-      continue-on-error: true
 
   lint:
     name: Code Quality
@@ -90,7 +88,6 @@ jobs:
       run: python -m build
     - name: Check package
       run: twine check dist/*
-      continue-on-error: true
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:

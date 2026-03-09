@@ -7,6 +7,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from . import __version__
 from .contract import (
     Profile,
     drift_check,
@@ -112,9 +113,53 @@ def _cmd_profile(args: argparse.Namespace) -> int:
         return EXIT_CLI_ERROR
 
 
-def _report_json(obj: Any, out: str) -> None:
-    """Output JSON report to file or stdout."""
-    text = json.dumps(obj, indent=2, sort_keys=True)
+def _format_table(report: dict[str, Any]) -> str:
+    """Format check report as a human-readable table."""
+    lines: list[str] = []
+    ok = report.get("ok", False)
+    lines.append(f"Status: {'PASS' if ok else 'FAIL'}")
+    lines.append("")
+
+    validation_issues = report.get("validation_issues", [])
+    if validation_issues:
+        lines.append("Validation Issues:")
+        lines.append(f"  {'Kind':<25} {'Field':<20} {'Count':>6}  Message")
+        lines.append(f"  {'-'*25} {'-'*20} {'-'*6}  {'-'*30}")
+        for v in validation_issues:
+            kind = v.get("kind", "")
+            field = v.get("field", "")
+            count = v.get("count", 0)
+            msg = v.get("message", "")
+            lines.append(f"  {kind:<25} {field:<20} {count:>6}  {msg}")
+    else:
+        lines.append("Validation: OK (no issues)")
+
+    lines.append("")
+
+    drift_issues = report.get("drift_issues", [])
+    if drift_issues:
+        lines.append("Drift Issues:")
+        lines.append(f"  {'Kind':<25} {'Field':<20} {'Count':>6}  Message")
+        lines.append(f"  {'-'*25} {'-'*20} {'-'*6}  {'-'*30}")
+        for d in drift_issues:
+            kind = d.get("kind", "")
+            field = d.get("field", "")
+            count = d.get("count", 0)
+            msg = d.get("message", "")
+            lines.append(f"  {kind:<25} {field:<20} {count:>6}  {msg}")
+    else:
+        lines.append("Drift: OK (no issues)")
+
+    return "\n".join(lines)
+
+
+def _report_output(report: dict[str, Any], out: str, fmt: str) -> None:
+    """Output report to file or stdout in the requested format."""
+    if fmt == "table":
+        text = _format_table(report)
+    else:
+        text = json.dumps(report, indent=2, sort_keys=True)
+
     if out:
         try:
             out_path = Path(out)
@@ -125,6 +170,11 @@ def _report_json(obj: Any, out: str) -> None:
             raise
     else:
         print(text)
+
+
+def _report_json(obj: Any, out: str) -> None:
+    """Output JSON report to file or stdout."""
+    _report_output(obj, out, "json")
 
 
 def _cmd_check(args: argparse.Namespace) -> int:
@@ -204,8 +254,9 @@ def _cmd_check(args: argparse.Namespace) -> int:
         "drift_issues": [v.__dict__ for v in baseline_issues],
     }
 
+    output_format = getattr(args, "output_format", "json")
     try:
-        _report_json(report, str(args.out or ""))
+        _report_output(report, str(args.out or ""), output_format)
     except (OSError, PermissionError) as e:
         logger.error(f"Failed to write report: {e}")
         return EXIT_CLI_ERROR
@@ -233,6 +284,11 @@ def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="toolkit-contracts",
         description="Toolkit Data Contracts Drift - Validate and monitor data contracts",
+    )
+    p.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
     p.add_argument(
         "--verbose",
@@ -291,6 +347,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--metrics-out",
         default="",
         help="Output metrics JSON file path (default: none)",
+    )
+    check.add_argument(
+        "--format",
+        choices=["json", "table"],
+        default="json",
+        dest="output_format",
+        help="Output format: json (default) or table",
     )
     check.set_defaults(func=_cmd_check)
 

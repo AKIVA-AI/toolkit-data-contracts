@@ -183,11 +183,8 @@ cat profiles/baseline.profile.json | jq .
 
 **Performance Issues:**
 ```bash
-# Increase batch size
-export BATCH_SIZE=50000
-
-# Use multiple workers
-export MAX_WORKERS=8
+# Use --limit to cap records processed
+toolkit-contracts infer --input data/samples.jsonl --out contract.json --limit 10000
 ```
 
 ## ðŸ“ž Support
@@ -195,5 +192,5 @@ export MAX_WORKERS=8
 - Documentation: [README.md](README.md)
 - Examples: [examples/](examples/)
 - Issues: GitHub Issues
-- Email: <support-email>
+- Email: support@akiva.com
 

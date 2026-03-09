@@ -13,6 +13,19 @@ def infer_contract(
     *,
     allow_extra_fields: bool = True,
 ) -> Contract:
+    """Infer a data contract from a list of records.
+
+    Analyzes all records to determine field names, types, and whether each
+    field is required (present in every record).
+
+    Args:
+        records: List of dictionaries representing data records.
+        allow_extra_fields: If True, the contract permits fields not listed
+            in the inferred schema.
+
+    Returns:
+        A Contract TypedDict with version, allow_extra_fields, and fields.
+    """
     field_types: dict[str, set[JsonScalarType]] = defaultdict(set)
     present_counts: Counter[str] = Counter()
 
@@ -38,10 +51,22 @@ class Profile:
     field_stats: dict[str, dict[str, Any]]
 
     def to_json(self) -> dict[str, Any]:
+        """Serialize the profile to a JSON-compatible dictionary."""
         return {"version": int(self.version), "field_stats": dict(self.field_stats)}
 
     @staticmethod
     def from_json(obj: Any) -> Profile:
+        """Deserialize a Profile from a JSON-parsed dictionary.
+
+        Args:
+            obj: Dictionary with 'version' and 'field_stats' keys.
+
+        Returns:
+            A Profile instance.
+
+        Raises:
+            ValueError: If obj is not a dict or is missing field_stats.
+        """
         if not isinstance(obj, dict):
             raise ValueError("profile_not_object")
         version = int(obj.get("version", 0))
@@ -58,6 +83,18 @@ def validate_records(
     contract: Contract,
     records: list[dict[str, Any]],
 ) -> list[ValidationIssue]:
+    """Validate records against a contract.
+
+    Checks for missing required fields, type mismatches, and unexpected
+    fields (when allow_extra_fields is False).
+
+    Args:
+        contract: The data contract to validate against.
+        records: List of data records to validate.
+
+    Returns:
+        List of ValidationIssue instances. Empty list means all records pass.
+    """
     issues: dict[tuple[str, str, str], int] = {}
 
     allow_extra = bool(contract.get("allow_extra_fields", True))
@@ -90,6 +127,18 @@ def validate_records(
 
 
 def profile_records(*, contract: Contract, records: list[dict[str, Any]]) -> Profile:
+    """Compute a statistical profile of records for drift detection.
+
+    For each field in the contract, computes missing rate, type distribution,
+    and numeric statistics (mean, std, min, max) when applicable.
+
+    Args:
+        contract: The data contract defining expected fields.
+        records: List of data records to profile.
+
+    Returns:
+        A Profile containing per-field statistics.
+    """
     fields = contract.get("fields") or {}
     total = max(1, len(records))
     stats: dict[str, dict[str, Any]] = {}
@@ -136,6 +185,20 @@ def drift_check(
     max_missing_rate: float = 0.01,
     max_mean_shift_sigma: float = 3.0,
 ) -> list[ValidationIssue]:
+    """Compare current profile against a baseline to detect data drift.
+
+    Checks for increases in missing rates beyond the threshold and mean
+    shifts exceeding the allowed number of standard deviations.
+
+    Args:
+        baseline: Reference profile from known-good data.
+        current: Profile from new data to compare.
+        max_missing_rate: Maximum acceptable missing rate for any field.
+        max_mean_shift_sigma: Maximum acceptable mean shift in standard deviations.
+
+    Returns:
+        List of ValidationIssue instances describing detected drift. Empty means no drift.
+    """
     issues: list[ValidationIssue] = []
 
     for fname, b in baseline.field_stats.items():
