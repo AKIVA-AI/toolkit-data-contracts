@@ -26,6 +26,7 @@ class TestConfigValidate:
     def _fresh_config(self, env_overrides: dict[str, str] | None = None):
         """Import Config with fresh env vars. Raises on import if validation fails."""
         import importlib
+
         import toolkit_data_contracts_drift.config as cfg_mod
 
         env = {**self._DEFAULT_ENV}
@@ -38,6 +39,7 @@ class TestConfigValidate:
     def _reload_expecting_error(self, env_overrides: dict[str, str], match: str):
         """Reload config expecting ValueError on import (validation runs at import time)."""
         import importlib
+
         import toolkit_data_contracts_drift.config as cfg_mod
 
         env = {**self._DEFAULT_ENV, **env_overrides}
@@ -113,6 +115,7 @@ class TestConfigGetConfigDict:
 
     def _fresh_config(self, env_overrides: dict[str, str] | None = None):
         import importlib
+
         import toolkit_data_contracts_drift.config as cfg_mod
 
         env = {**self._DEFAULT_ENV}
@@ -145,12 +148,14 @@ class TestConfigGetConfigDict:
 
     def test_get_config_dict_custom_env_vars(self):
         """Config dict reflects custom env var values."""
-        Config = self._fresh_config({
-            "DEFAULT_SAMPLE_SIZE": "500",
-            "DEFAULT_CONFIDENCE_THRESHOLD": "0.99",
-            "ENABLE_STATISTICAL_TESTS": "false",
-            "ALLOW_EXTRA_FIELDS": "true",
-        })
+        Config = self._fresh_config(
+            {
+                "DEFAULT_SAMPLE_SIZE": "500",
+                "DEFAULT_CONFIDENCE_THRESHOLD": "0.99",
+                "ENABLE_STATISTICAL_TESTS": "false",
+                "ALLOW_EXTRA_FIELDS": "true",
+            }
+        )
         d = Config.get_config_dict()
         assert d["inference"]["sample_size"] == 500
         assert d["inference"]["confidence_threshold"] == 0.99
@@ -165,6 +170,7 @@ class TestConfigEnvVarParsing:
 
     def _fresh_config(self, env_overrides: dict[str, str] | None = None):
         import importlib
+
         import toolkit_data_contracts_drift.config as cfg_mod
 
         env = {**self._DEFAULT_ENV}

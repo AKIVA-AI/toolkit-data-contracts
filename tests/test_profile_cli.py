@@ -20,11 +20,14 @@ class TestProfileCLI:
         """Profile command succeeds with valid input and contract."""
         # Create input data
         data_file = tmp_path / "data.jsonl"
-        _write_jsonl(data_file, [
-            {"name": "Alice", "age": 30, "score": 95.5},
-            {"name": "Bob", "age": 25, "score": 88.0},
-            {"name": "Charlie", "age": 35, "score": 92.3},
-        ])
+        _write_jsonl(
+            data_file,
+            [
+                {"name": "Alice", "age": 30, "score": 95.5},
+                {"name": "Bob", "age": 25, "score": 88.0},
+                {"name": "Charlie", "age": 35, "score": 92.3},
+            ],
+        )
 
         # Create contract
         contract_file = tmp_path / "contract.json"
@@ -33,12 +36,17 @@ class TestProfileCLI:
 
         # Run profile
         profile_file = tmp_path / "profile.json"
-        exit_code = main([
-            "profile",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-            "--out", str(profile_file),
-        ])
+        exit_code = main(
+            [
+                "profile",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+                "--out",
+                str(profile_file),
+            ]
+        )
         assert exit_code == EXIT_SUCCESS
         assert profile_file.exists()
 
@@ -53,22 +61,30 @@ class TestProfileCLI:
     def test_profile_numeric_stats(self, tmp_path: Path):
         """Profile computes numeric stats for numeric fields."""
         data_file = tmp_path / "data.jsonl"
-        _write_jsonl(data_file, [
-            {"value": 10},
-            {"value": 20},
-            {"value": 30},
-        ])
+        _write_jsonl(
+            data_file,
+            [
+                {"value": 10},
+                {"value": 20},
+                {"value": 30},
+            ],
+        )
 
         contract_file = tmp_path / "contract.json"
         main(["infer", "--input", str(data_file), "--out", str(contract_file)])
 
         profile_file = tmp_path / "profile.json"
-        exit_code = main([
-            "profile",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-            "--out", str(profile_file),
-        ])
+        exit_code = main(
+            [
+                "profile",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+                "--out",
+                str(profile_file),
+            ]
+        )
         assert exit_code == EXIT_SUCCESS
 
         profile = read_json(profile_file)
@@ -87,13 +103,19 @@ class TestProfileCLI:
         main(["infer", "--input", str(data_file), "--out", str(contract_file)])
 
         profile_file = tmp_path / "profile.json"
-        exit_code = main([
-            "profile",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-            "--out", str(profile_file),
-            "--limit", "10",
-        ])
+        exit_code = main(
+            [
+                "profile",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+                "--out",
+                str(profile_file),
+                "--limit",
+                "10",
+            ]
+        )
         assert exit_code == EXIT_SUCCESS
 
     def test_profile_contract_not_found(self, tmp_path: Path):
@@ -101,12 +123,17 @@ class TestProfileCLI:
         data_file = tmp_path / "data.jsonl"
         _write_jsonl(data_file, [{"x": 1}])
 
-        exit_code = main([
-            "profile",
-            "--input", str(data_file),
-            "--contract", str(tmp_path / "missing.json"),
-            "--out", str(tmp_path / "profile.json"),
-        ])
+        exit_code = main(
+            [
+                "profile",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(tmp_path / "missing.json"),
+                "--out",
+                str(tmp_path / "profile.json"),
+            ]
+        )
         assert exit_code == EXIT_CLI_ERROR
 
     def test_profile_input_not_found(self, tmp_path: Path):
@@ -117,33 +144,46 @@ class TestProfileCLI:
             encoding="utf-8",
         )
 
-        exit_code = main([
-            "profile",
-            "--input", str(tmp_path / "missing.jsonl"),
-            "--contract", str(contract_file),
-            "--out", str(tmp_path / "profile.json"),
-        ])
+        exit_code = main(
+            [
+                "profile",
+                "--input",
+                str(tmp_path / "missing.jsonl"),
+                "--contract",
+                str(contract_file),
+                "--out",
+                str(tmp_path / "profile.json"),
+            ]
+        )
         assert exit_code == EXIT_CLI_ERROR
 
     def test_profile_missing_rate(self, tmp_path: Path):
         """Profile computes missing rate for partially-present fields."""
         data_file = tmp_path / "data.jsonl"
-        _write_jsonl(data_file, [
-            {"name": "Alice", "age": 30},
-            {"name": "Bob"},
-            {"name": "Charlie", "age": 35},
-        ])
+        _write_jsonl(
+            data_file,
+            [
+                {"name": "Alice", "age": 30},
+                {"name": "Bob"},
+                {"name": "Charlie", "age": 35},
+            ],
+        )
 
         contract_file = tmp_path / "contract.json"
         main(["infer", "--input", str(data_file), "--out", str(contract_file)])
 
         profile_file = tmp_path / "profile.json"
-        exit_code = main([
-            "profile",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-            "--out", str(profile_file),
-        ])
+        exit_code = main(
+            [
+                "profile",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+                "--out",
+                str(profile_file),
+            ]
+        )
         assert exit_code == EXIT_SUCCESS
 
         profile = read_json(profile_file)

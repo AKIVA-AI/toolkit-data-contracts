@@ -41,73 +41,116 @@ class TestFormatFlag:
     def setup_files(self, tmp_path: Path) -> tuple[Path, Path, Path]:
         """Create input JSONL, contract, and baseline files."""
         data_path = tmp_path / "data.jsonl"
-        _write_jsonl(data_path, [
-            {"name": "Alice", "score": 90},
-            {"name": "Bob", "score": 85},
-        ])
+        _write_jsonl(
+            data_path,
+            [
+                {"name": "Alice", "score": 90},
+                {"name": "Bob", "score": 85},
+            ],
+        )
         contract_path = tmp_path / "contract.json"
         assert main(["infer", "--input", str(data_path), "--out", str(contract_path)]) == 0
 
         profile_path = tmp_path / "baseline.json"
-        assert main([
-            "profile",
-            "--input", str(data_path),
-            "--contract", str(contract_path),
-            "--out", str(profile_path),
-        ]) == 0
+        assert (
+            main(
+                [
+                    "profile",
+                    "--input",
+                    str(data_path),
+                    "--contract",
+                    str(contract_path),
+                    "--out",
+                    str(profile_path),
+                ]
+            )
+            == 0
+        )
         return data_path, contract_path, profile_path
 
     def test_format_json_default(
-        self, tmp_path: Path, setup_files: tuple[Path, Path, Path], capsys: pytest.CaptureFixture[str]
+        self,
+        tmp_path: Path,
+        setup_files: tuple[Path, Path, Path],
+        capsys: pytest.CaptureFixture[str],
     ) -> None:
         """Default format is JSON."""
         data_path, contract_path, profile_path = setup_files
-        code = main([
-            "check",
-            "--input", str(data_path),
-            "--contract", str(contract_path),
-            "--baseline", str(profile_path),
-            "--max-missing", "0.5",
-            "--max-mean-shift-sigma", "10.0",
-        ])
+        code = main(
+            [
+                "check",
+                "--input",
+                str(data_path),
+                "--contract",
+                str(contract_path),
+                "--baseline",
+                str(profile_path),
+                "--max-missing",
+                "0.5",
+                "--max-mean-shift-sigma",
+                "10.0",
+            ]
+        )
         assert code == 0
         captured = capsys.readouterr()
         parsed = json.loads(captured.out)
         assert parsed["ok"] is True
 
     def test_format_json_explicit(
-        self, tmp_path: Path, setup_files: tuple[Path, Path, Path], capsys: pytest.CaptureFixture[str]
+        self,
+        tmp_path: Path,
+        setup_files: tuple[Path, Path, Path],
+        capsys: pytest.CaptureFixture[str],
     ) -> None:
         """--format json produces valid JSON output."""
         data_path, contract_path, profile_path = setup_files
-        code = main([
-            "check",
-            "--input", str(data_path),
-            "--contract", str(contract_path),
-            "--baseline", str(profile_path),
-            "--max-missing", "0.5",
-            "--max-mean-shift-sigma", "10.0",
-            "--format", "json",
-        ])
+        code = main(
+            [
+                "check",
+                "--input",
+                str(data_path),
+                "--contract",
+                str(contract_path),
+                "--baseline",
+                str(profile_path),
+                "--max-missing",
+                "0.5",
+                "--max-mean-shift-sigma",
+                "10.0",
+                "--format",
+                "json",
+            ]
+        )
         assert code == 0
         captured = capsys.readouterr()
         parsed = json.loads(captured.out)
         assert parsed["ok"] is True
 
     def test_format_table(
-        self, tmp_path: Path, setup_files: tuple[Path, Path, Path], capsys: pytest.CaptureFixture[str]
+        self,
+        tmp_path: Path,
+        setup_files: tuple[Path, Path, Path],
+        capsys: pytest.CaptureFixture[str],
     ) -> None:
         """--format table produces human-readable table."""
         data_path, contract_path, profile_path = setup_files
-        code = main([
-            "check",
-            "--input", str(data_path),
-            "--contract", str(contract_path),
-            "--baseline", str(profile_path),
-            "--max-missing", "0.5",
-            "--max-mean-shift-sigma", "10.0",
-            "--format", "table",
-        ])
+        code = main(
+            [
+                "check",
+                "--input",
+                str(data_path),
+                "--contract",
+                str(contract_path),
+                "--baseline",
+                str(profile_path),
+                "--max-missing",
+                "0.5",
+                "--max-mean-shift-sigma",
+                "10.0",
+                "--format",
+                "table",
+            ]
+        )
         assert code == 0
         captured = capsys.readouterr()
         assert "Status: PASS" in captured.out
@@ -126,12 +169,17 @@ class TestFormatFlag:
         bad_path = tmp_path / "bad.jsonl"
         _write_jsonl(bad_path, [{"name": 123, "score": 90}])
 
-        code = main([
-            "check",
-            "--input", str(bad_path),
-            "--contract", str(contract_path),
-            "--format", "table",
-        ])
+        code = main(
+            [
+                "check",
+                "--input",
+                str(bad_path),
+                "--contract",
+                str(contract_path),
+                "--format",
+                "table",
+            ]
+        )
         assert code == 4
         captured = capsys.readouterr()
         assert "Status: FAIL" in captured.out
@@ -144,16 +192,25 @@ class TestFormatFlag:
         """--format table writes table to file with --out."""
         data_path, contract_path, profile_path = setup_files
         out_path = tmp_path / "report.txt"
-        code = main([
-            "check",
-            "--input", str(data_path),
-            "--contract", str(contract_path),
-            "--baseline", str(profile_path),
-            "--max-missing", "0.5",
-            "--max-mean-shift-sigma", "10.0",
-            "--format", "table",
-            "--out", str(out_path),
-        ])
+        code = main(
+            [
+                "check",
+                "--input",
+                str(data_path),
+                "--contract",
+                str(contract_path),
+                "--baseline",
+                str(profile_path),
+                "--max-missing",
+                "0.5",
+                "--max-mean-shift-sigma",
+                "10.0",
+                "--format",
+                "table",
+                "--out",
+                str(out_path),
+            ]
+        )
         assert code == 0
         content = out_path.read_text(encoding="utf-8")
         assert "Status: PASS" in content

@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from pathlib import Path
@@ -41,9 +41,7 @@ def test_infer_profile_and_check_pass(tmp_path: Path) -> None:
     )
 
     new_batch = tmp_path / "new.jsonl"
-    _write_jsonl(
-        new_batch, [{"country": "US", "age": 12}, {"country": "CA", "age": 13}]
-    )
+    _write_jsonl(new_batch, [{"country": "US", "age": 12}, {"country": "CA", "age": 13}])
     assert (
         main(
             [

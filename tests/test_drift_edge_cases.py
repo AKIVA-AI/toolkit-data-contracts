@@ -7,7 +7,6 @@ from __future__ import annotations
 from toolkit_data_contracts_drift.contract import Profile, drift_check, profile_records
 from toolkit_data_contracts_drift.types import json_type
 
-
 # ============================================================================
 # Task 3: drift_check Edge Cases
 # ============================================================================
@@ -161,9 +160,7 @@ class TestDriftCheckMeanShift:
                 }
             },
         )
-        issues = drift_check(
-            baseline=baseline, current=current, max_mean_shift_sigma=3.0
-        )
+        issues = drift_check(baseline=baseline, current=current, max_mean_shift_sigma=3.0)
         mean_issues = [i for i in issues if i.kind == "drift_mean_shift"]
         assert len(mean_issues) == 1
 

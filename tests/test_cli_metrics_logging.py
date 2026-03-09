@@ -16,21 +16,29 @@ def _write_jsonl(path: Path, rows: list[dict[str, object]]) -> None:
 def _setup_check_fixtures(tmp_path: Path):
     """Create input data, contract, and baseline for check tests."""
     data_file = tmp_path / "data.jsonl"
-    _write_jsonl(data_file, [
-        {"name": "Alice", "age": 30},
-        {"name": "Bob", "age": 25},
-    ])
+    _write_jsonl(
+        data_file,
+        [
+            {"name": "Alice", "age": 30},
+            {"name": "Bob", "age": 25},
+        ],
+    )
 
     contract_file = tmp_path / "contract.json"
     main(["infer", "--input", str(data_file), "--out", str(contract_file)])
 
     profile_file = tmp_path / "baseline.json"
-    main([
-        "profile",
-        "--input", str(data_file),
-        "--contract", str(contract_file),
-        "--out", str(profile_file),
-    ])
+    main(
+        [
+            "profile",
+            "--input",
+            str(data_file),
+            "--contract",
+            str(contract_file),
+            "--out",
+            str(profile_file),
+        ]
+    )
 
     return data_file, contract_file, profile_file
 
@@ -48,15 +56,23 @@ class TestCheckMetricsWiring:
         data_file, contract_file, profile_file = _setup_check_fixtures(tmp_path)
 
         metrics_file = tmp_path / "metrics.json"
-        exit_code = main([
-            "check",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-            "--baseline", str(profile_file),
-            "--max-missing", "0.5",
-            "--max-mean-shift-sigma", "10.0",
-            "--metrics-out", str(metrics_file),
-        ])
+        exit_code = main(
+            [
+                "check",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+                "--baseline",
+                str(profile_file),
+                "--max-missing",
+                "0.5",
+                "--max-mean-shift-sigma",
+                "10.0",
+                "--metrics-out",
+                str(metrics_file),
+            ]
+        )
         assert exit_code == EXIT_SUCCESS
         assert metrics_file.exists()
 
@@ -77,12 +93,17 @@ class TestCheckMetricsWiring:
         _write_jsonl(bad_data, [{"name": 123, "age": 30}])
 
         metrics_file = tmp_path / "metrics.json"
-        exit_code = main([
-            "check",
-            "--input", str(bad_data),
-            "--contract", str(contract_file),
-            "--metrics-out", str(metrics_file),
-        ])
+        exit_code = main(
+            [
+                "check",
+                "--input",
+                str(bad_data),
+                "--contract",
+                str(contract_file),
+                "--metrics-out",
+                str(metrics_file),
+            ]
+        )
         assert exit_code == EXIT_CHECK_FAILED
 
         metrics = read_json(metrics_file)
@@ -95,20 +116,30 @@ class TestCheckMetricsWiring:
 
         # Create data with drift
         drifted = tmp_path / "drifted.jsonl"
-        _write_jsonl(drifted, [
-            {"name": "Alice", "age": 300},
-            {"name": "Bob", "age": 250},
-        ])
+        _write_jsonl(
+            drifted,
+            [
+                {"name": "Alice", "age": 300},
+                {"name": "Bob", "age": 250},
+            ],
+        )
 
         metrics_file = tmp_path / "metrics.json"
-        main([
-            "check",
-            "--input", str(drifted),
-            "--contract", str(contract_file),
-            "--baseline", str(profile_file),
-            "--max-mean-shift-sigma", "0.1",
-            "--metrics-out", str(metrics_file),
-        ])
+        main(
+            [
+                "check",
+                "--input",
+                str(drifted),
+                "--contract",
+                str(contract_file),
+                "--baseline",
+                str(profile_file),
+                "--max-mean-shift-sigma",
+                "0.1",
+                "--metrics-out",
+                str(metrics_file),
+            ]
+        )
 
         metrics = read_json(metrics_file)
         assert metrics["drift_checks"] >= 1
@@ -127,12 +158,17 @@ class TestMetricsOutFlag:
         data_file, contract_file, _ = _setup_check_fixtures(tmp_path)
 
         metrics_file = tmp_path / "my_metrics.json"
-        exit_code = main([
-            "check",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-            "--metrics-out", str(metrics_file),
-        ])
+        exit_code = main(
+            [
+                "check",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+                "--metrics-out",
+                str(metrics_file),
+            ]
+        )
         assert exit_code == EXIT_SUCCESS
         assert metrics_file.exists()
 
@@ -144,11 +180,15 @@ class TestMetricsOutFlag:
         """When --metrics-out is not specified, no metrics file is created."""
         data_file, contract_file, _ = _setup_check_fixtures(tmp_path)
 
-        exit_code = main([
-            "check",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-        ])
+        exit_code = main(
+            [
+                "check",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+            ]
+        )
         assert exit_code == EXIT_SUCCESS
         # No metrics file created in tmp_path (besides the fixtures)
 
@@ -169,12 +209,17 @@ class TestStructuredJsonLogging:
         contract_file = tmp_path / "contract.json"
         main(["infer", "--input", str(data_file), "--out", str(contract_file)])
 
-        exit_code = main([
-            "--log-format", "json",
-            "check",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-        ])
+        exit_code = main(
+            [
+                "--log-format",
+                "json",
+                "check",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+            ]
+        )
         assert exit_code == EXIT_SUCCESS
 
     def test_log_format_text_flag_accepted(self, tmp_path: Path):
@@ -185,18 +230,21 @@ class TestStructuredJsonLogging:
         contract_file = tmp_path / "contract.json"
         main(["infer", "--input", str(data_file), "--out", str(contract_file)])
 
-        exit_code = main([
-            "--log-format", "text",
-            "check",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-        ])
+        exit_code = main(
+            [
+                "--log-format",
+                "text",
+                "check",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+            ]
+        )
         assert exit_code == EXIT_SUCCESS
 
     def test_log_format_json_produces_json_output(self, tmp_path: Path, capsys):
         """JSON log format produces parseable JSON on stderr."""
-        import logging
-        import sys
 
         data_file = tmp_path / "data.jsonl"
         _write_jsonl(data_file, [{"x": 1}])
@@ -205,10 +253,16 @@ class TestStructuredJsonLogging:
         main(["infer", "--input", str(data_file), "--out", str(contract_file)])
 
         # Run with verbose + json logging to produce log output
-        exit_code = main([
-            "--verbose", "--log-format", "json",
-            "check",
-            "--input", str(data_file),
-            "--contract", str(contract_file),
-        ])
+        exit_code = main(
+            [
+                "--verbose",
+                "--log-format",
+                "json",
+                "check",
+                "--input",
+                str(data_file),
+                "--contract",
+                str(contract_file),
+            ]
+        )
         assert exit_code == EXIT_SUCCESS

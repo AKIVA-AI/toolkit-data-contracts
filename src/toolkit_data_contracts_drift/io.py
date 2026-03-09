@@ -80,9 +80,7 @@ def read_jsonl(path: Path, *, limit: int | None = None) -> Iterable[dict[str, An
         PermissionError: If file is not readable
     """
     validated_path = validate_path_for_read(path)
-    logger.debug(
-        f"Reading JSONL from: {validated_path}" + (f" (limit={limit})" if limit else "")
-    )
+    logger.debug(f"Reading JSONL from: {validated_path}" + (f" (limit={limit})" if limit else ""))
 
     n = 0
     try:

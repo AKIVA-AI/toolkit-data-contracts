@@ -73,9 +73,7 @@ class Profile:
         stats = obj.get("field_stats")
         if not isinstance(stats, dict):
             raise ValueError("profile_missing_field_stats")
-        return Profile(
-            version=version, field_stats={str(k): dict(v) for k, v in stats.items()}
-        )
+        return Profile(version=version, field_stats={str(k): dict(v) for k, v in stats.items()})
 
 
 def validate_records(

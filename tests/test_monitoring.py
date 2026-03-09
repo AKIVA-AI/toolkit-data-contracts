@@ -14,7 +14,6 @@ from toolkit_data_contracts_drift.monitoring import (
     get_metrics,
 )
 
-
 # ============================================================================
 # HealthCheck Tests
 # ============================================================================
@@ -84,9 +83,7 @@ class TestHealthCheckContract:
     def test_check_contract_missing_version_only(self, tmp_path: Path):
         """Contract missing only version."""
         contract_path = tmp_path / "no_version.json"
-        contract_path.write_text(
-            json.dumps({"fields": {"a": {}}}), encoding="utf-8"
-        )
+        contract_path.write_text(json.dumps({"fields": {"a": {}}}), encoding="utf-8")
         result = HealthCheck.check_contract(contract_path)
         assert result["status"] == "invalid"
         assert "version" in result["missing_fields"]
@@ -228,9 +225,7 @@ class TestGetHealthStatus:
     def test_health_status_with_contract(self, tmp_path: Path):
         """Health status with valid contract path."""
         contract_path = tmp_path / "contract.json"
-        contract_path.write_text(
-            json.dumps({"version": 1, "fields": {}}), encoding="utf-8"
-        )
+        contract_path.write_text(json.dumps({"version": 1, "fields": {}}), encoding="utf-8")
         result = get_health_status(contract_path=contract_path)
         assert "system" in result
         assert "metrics" in result

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Monitoring and health checks for Toolkit Data Contracts & Drift Detection
 """
 
@@ -115,8 +115,7 @@ class ContractMetrics:
         return {
             **self.metrics,
             "validation_success_rate": (
-                self.metrics["validations_passed"]
-                / self.metrics["validations_performed"]
+                self.metrics["validations_passed"] / self.metrics["validations_performed"]
                 if self.metrics["validations_performed"] > 0
                 else 0.0
             ),
