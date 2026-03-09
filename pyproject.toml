@@ -51,7 +51,7 @@ omit = ["*/toolkit_data_contracts_drift/__main__.py"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-fail_under = 60
+fail_under = 80
 
 [tool.ruff]
 line-length = 100

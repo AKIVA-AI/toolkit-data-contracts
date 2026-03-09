@@ -5,7 +5,7 @@ Monitoring and health checks for Toolkit Data Contracts & Drift Detection
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -22,13 +22,13 @@ class HealthCheck:
             return {
                 "status": "healthy",
                 "version": __version__,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
             return {
                 "status": "unhealthy",
                 "error": str(e),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
     @staticmethod
@@ -39,7 +39,7 @@ class HealthCheck:
                 return {
                     "status": "not_found",
                     "path": str(contract_path),
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                 }
 
             with open(contract_path) as f:
@@ -53,7 +53,7 @@ class HealthCheck:
                     "status": "invalid",
                     "missing_fields": missing,
                     "path": str(contract_path),
-                    "timestamp": datetime.utcnow().isoformat(),
+                    "timestamp": datetime.now(UTC).isoformat(),
                 }
 
             return {
@@ -61,21 +61,21 @@ class HealthCheck:
                 "version": contract.get("version"),
                 "fields": len(contract.get("fields", {})),
                 "path": str(contract_path),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
         except json.JSONDecodeError as e:
             return {
                 "status": "invalid_json",
                 "error": str(e),
                 "path": str(contract_path),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
         except Exception as e:
             return {
                 "status": "error",
                 "error": str(e),
                 "path": str(contract_path),
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(UTC).isoformat(),
             }
 
 
@@ -125,7 +125,7 @@ class ContractMetrics:
                 if self.metrics["drift_checks"] > 0
                 else 0.0
             ),
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
     def reset(self):

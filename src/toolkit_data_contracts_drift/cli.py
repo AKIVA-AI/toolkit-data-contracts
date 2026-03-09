@@ -15,6 +15,7 @@ from .contract import (
     validate_records,
 )
 from .io import read_json, read_jsonl, write_json
+from .monitoring import ContractMetrics
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,21 @@ EXIT_SUCCESS = 0
 EXIT_CLI_ERROR = 2
 EXIT_UNEXPECTED_ERROR = 3
 EXIT_CHECK_FAILED = 4
+
+
+class _JsonLogFormatter(logging.Formatter):
+    """Structured JSON log formatter."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        log_entry = {
+            "timestamp": self.formatTime(record, "%Y-%m-%dT%H:%M:%S"),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if record.exc_info and record.exc_info[1]:
+            log_entry["exception"] = str(record.exc_info[1])
+        return json.dumps(log_entry)
 
 
 def _cmd_infer(args: argparse.Namespace) -> int:
@@ -133,11 +149,14 @@ def _cmd_check(args: argparse.Namespace) -> int:
         logger.error(f"Failed to read input: {e}")
         return EXIT_CLI_ERROR
 
+    metrics = ContractMetrics()
+
     logger.info("Validating records...")
 
     try:
         validation = validate_records(contract=contract, records=records)
         failed = bool(validation)
+        metrics.record_validation(passed=not bool(validation))
 
         if validation:
             logger.warning(f"Found {len(validation)} validation issues")
@@ -165,6 +184,7 @@ def _cmd_check(args: argparse.Namespace) -> int:
                 max_mean_shift_sigma=float(args.max_mean_shift_sigma),
             )
             failed = failed or bool(baseline_issues)
+            metrics.record_drift_check(drift_detected=bool(baseline_issues))
 
             if baseline_issues:
                 logger.warning(f"Found {len(baseline_issues)} drift issues")
@@ -190,6 +210,16 @@ def _cmd_check(args: argparse.Namespace) -> int:
         logger.error(f"Failed to write report: {e}")
         return EXIT_CLI_ERROR
 
+    # Export metrics if --metrics-out is specified
+    metrics_out = getattr(args, "metrics_out", None)
+    if metrics_out:
+        try:
+            metrics_path = Path(metrics_out).resolve()
+            write_json(metrics_path, metrics.get_metrics())
+            logger.info(f"Wrote metrics to: {metrics_path}")
+        except (OSError, PermissionError, ValueError) as e:
+            logger.error(f"Failed to write metrics: {e}")
+
     if failed:
         logger.error("Check failed")
         return EXIT_CHECK_FAILED
@@ -209,6 +239,12 @@ def build_parser() -> argparse.ArgumentParser:
         "-v",
         action="store_true",
         help="Enable verbose logging (DEBUG level)",
+    )
+    p.add_argument(
+        "--log-format",
+        choices=["text", "json"],
+        default="text",
+        help="Log output format: text (default) or json",
     )
     sub = p.add_subparsers(dest="cmd", required=True)
 
@@ -251,6 +287,11 @@ def build_parser() -> argparse.ArgumentParser:
     check.add_argument(
         "--out", default="", help="Output report file path (default: stdout)"
     )
+    check.add_argument(
+        "--metrics-out",
+        default="",
+        help="Output metrics JSON file path (default: none)",
+    )
     check.set_defaults(func=_cmd_check)
 
     return p
@@ -268,12 +309,19 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.WARNING,
-        format="%(asctime)s | %(levelname)-8s | %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        stream=sys.stderr,
-    )
+    log_level = logging.DEBUG if args.verbose else logging.WARNING
+
+    if getattr(args, "log_format", "text") == "json":
+        handler = logging.StreamHandler(sys.stderr)
+        handler.setFormatter(_JsonLogFormatter())
+        logging.basicConfig(level=log_level, handlers=[handler])
+    else:
+        logging.basicConfig(
+            level=log_level,
+            format="%(asctime)s | %(levelname)-8s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            stream=sys.stderr,
+        )
 
     try:
         return int(args.func(args))
