@@ -5,6 +5,7 @@ Maps the 3 CLI subcommands (infer, profile, check) to ToolSpec contracts.
 
 All commands are READ_ONLY + AUTO — data-contracts is a read/analysis-only toolkit.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass

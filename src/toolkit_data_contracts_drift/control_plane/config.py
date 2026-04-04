@@ -6,6 +6,7 @@ Three-tier hierarchy (mirrors Akiva platform pattern):
   Level 1 — Toolkit config (pyproject.toml / config file)
   Level 2 — CLI overrides (argv flags)
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -32,9 +33,9 @@ class ToolkitConfigContract:
     output_format: str = "json"
 
     # ── Data-contracts specific ───────────────────────────────────────────────
-    drift_threshold: float = 0.05     # fraction of records that may drift before alert
-    max_records: int = 100_000        # hard cap on JSONL input size
-    strict_mode: bool = False         # fail on any schema warning (not just errors)
+    drift_threshold: float = 0.05  # fraction of records that may drift before alert
+    max_records: int = 100_000  # hard cap on JSONL input size
+    strict_mode: bool = False  # fail on any schema warning (not just errors)
 
     # ── Extension ─────────────────────────────────────────────────────────────
     extra: dict[str, Any] = field(default_factory=dict)

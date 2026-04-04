@@ -144,9 +144,7 @@ class TestValidateRecordsEdgeCases:
             "allow_extra_fields": False,
             "fields": {"a": {"types": ["string"], "required": False}},
         }
-        issues = validate_records(
-            contract=contract, records=[{"a": "ok", "extra": 1}]
-        )
+        issues = validate_records(contract=contract, records=[{"a": "ok", "extra": 1}])
         unexpected = [i for i in issues if i.kind == "unexpected_field"]
         assert len(unexpected) == 1
         assert unexpected[0].field == "extra"
@@ -158,9 +156,7 @@ class TestValidateRecordsEdgeCases:
             "allow_extra_fields": True,
             "fields": {"a": {"types": ["string"], "required": False}},
         }
-        issues = validate_records(
-            contract=contract, records=[{"a": "ok", "extra": 1}]
-        )
+        issues = validate_records(contract=contract, records=[{"a": "ok", "extra": 1}])
         assert issues == []
 
     def test_type_mismatch_count_aggregated(self):
@@ -432,6 +428,7 @@ class TestJsonLogFormatterCli:
             raise RuntimeError("err")
         except RuntimeError:
             import sys
+
             rec = self._make_record()
             rec.exc_info = sys.exc_info()
         parsed = json.loads(fmt.format(rec))
@@ -513,10 +510,17 @@ class TestBuildParser:
 
     def test_profile_subcommand(self):
         p = build_parser()
-        args = p.parse_args([
-            "profile", "--input", "in.jsonl",
-            "--contract", "c.json", "--out", "p.json",
-        ])
+        args = p.parse_args(
+            [
+                "profile",
+                "--input",
+                "in.jsonl",
+                "--contract",
+                "c.json",
+                "--out",
+                "p.json",
+            ]
+        )
         assert args.cmd == "profile"
 
     def test_check_subcommand_defaults(self):
@@ -533,10 +537,17 @@ class TestBuildParser:
 
     def test_log_format_flag(self):
         p = build_parser()
-        args = p.parse_args([
-            "--log-format", "json",
-            "infer", "--input", "in.jsonl", "--out", "out.json",
-        ])
+        args = p.parse_args(
+            [
+                "--log-format",
+                "json",
+                "infer",
+                "--input",
+                "in.jsonl",
+                "--out",
+                "out.json",
+            ]
+        )
         assert args.log_format == "json"
 
 
@@ -573,12 +584,17 @@ class TestCliErrorPaths:
         contract = tmp_path / "contract.json"
         main(["infer", "--input", str(data), "--out", str(contract)])
 
-        code = main([
-            "check",
-            "--input", str(data),
-            "--contract", str(contract),
-            "--baseline", str(tmp_path / "missing_baseline.json"),
-        ])
+        code = main(
+            [
+                "check",
+                "--input",
+                str(data),
+                "--contract",
+                str(contract),
+                "--baseline",
+                str(tmp_path / "missing_baseline.json"),
+            ]
+        )
         assert code == EXIT_CLI_ERROR
 
     def test_check_with_out_file(self, tmp_path: Path):
@@ -589,12 +605,17 @@ class TestCliErrorPaths:
         main(["infer", "--input", str(data), "--out", str(contract)])
 
         report = tmp_path / "report.json"
-        code = main([
-            "check",
-            "--input", str(data),
-            "--contract", str(contract),
-            "--out", str(report),
-        ])
+        code = main(
+            [
+                "check",
+                "--input",
+                str(data),
+                "--contract",
+                str(contract),
+                "--out",
+                str(report),
+            ]
+        )
         assert code == EXIT_SUCCESS
         r = read_json(report)
         assert r["ok"] is True

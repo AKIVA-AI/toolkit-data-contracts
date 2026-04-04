@@ -6,26 +6,27 @@ Coverage:
   - config: build_config_hierarchy (defaults, toolkit config, CLI overrides)
   - tool_specs: TOOLKIT_TOOL_SPECS covers all 3 commands, get_tool_spec lookup
 """
+
 from __future__ import annotations
 
-from toolkit_data_contracts_drift.control_plane.contracts import (
-    ApprovalPolicy,
-    AuthorityBoundary,
-    PermissionScope,
-    _HAS_EXECUTION_CONTRACTS,
-)
 from toolkit_data_contracts_drift.control_plane.config import (
     CONFIG_LEVELS,
     ToolkitConfigContract,
     build_config_hierarchy,
+)
+from toolkit_data_contracts_drift.control_plane.contracts import (
+    _HAS_EXECUTION_CONTRACTS,
+    ApprovalPolicy,
+    AuthorityBoundary,
+    PermissionScope,
 )
 from toolkit_data_contracts_drift.control_plane.tool_specs import (
     TOOLKIT_TOOL_SPECS,
     get_tool_spec,
 )
 
-
 # ── contracts ─────────────────────────────────────────────────────────────────
+
 
 class TestPermissionScope:
     def test_values(self) -> None:
@@ -55,6 +56,7 @@ class TestFrameworkFlag:
 
 
 # ── config ────────────────────────────────────────────────────────────────────
+
 
 class TestConfigLevels:
     def test_ordering(self) -> None:
@@ -92,6 +94,7 @@ class TestBuildConfigHierarchy:
 
 
 # ── tool_specs ────────────────────────────────────────────────────────────────
+
 
 class TestToolkitToolSpecs:
     EXPECTED_COMMANDS = {"infer", "profile", "check"}
