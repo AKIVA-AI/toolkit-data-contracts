@@ -109,7 +109,7 @@ except ImportError:
         def __repr__(self) -> str:
             return (
                 f"ToolSpec(name={self.name!r}, scope={self.permission_scope.value!r}, "
-                f"approval={self.approval_policy.value!r})"
+                f"category={self.category!r})"
             )
 
 
