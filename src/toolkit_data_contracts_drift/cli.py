@@ -17,6 +17,7 @@ from .contract import (
 )
 from .io import read_json, read_jsonl, write_json
 from .monitoring import ContractMetrics
+from .observability import OperationTimer, get_operation_metrics, new_correlation_id
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,7 @@ def _cmd_infer(args: argparse.Namespace) -> int:
     input_path = Path(args.input).resolve()
     out_path = Path(args.out).resolve()
     limit = int(args.limit)
+    op_metrics = get_operation_metrics()
 
     logger.info(f"Inferring contract from: {input_path} (limit={limit})")
 
@@ -57,7 +59,10 @@ def _cmd_infer(args: argparse.Namespace) -> int:
         return EXIT_CLI_ERROR
 
     try:
-        c = infer_contract(records, allow_extra_fields=not bool(args.disallow_extra))
+        with OperationTimer("infer") as timer:
+            c = infer_contract(records, allow_extra_fields=not bool(args.disallow_extra))
+        op_metrics.record_infer(record_count=len(records))
+        op_metrics.record_timing("infer", timer.duration_ms)
         logger.info("Contract inferred successfully")
     except Exception as e:
         logger.error(f"Failed to infer contract: {e}")
@@ -78,6 +83,7 @@ def _cmd_profile(args: argparse.Namespace) -> int:
     contract_path = Path(args.contract).resolve()
     out_path = Path(args.out).resolve()
     limit = int(args.limit)
+    op_metrics = get_operation_metrics()
 
     logger.info(f"Loading contract from: {contract_path}")
 
@@ -99,7 +105,10 @@ def _cmd_profile(args: argparse.Namespace) -> int:
     logger.info("Computing profile...")
 
     try:
-        prof = profile_records(contract=contract, records=records)
+        with OperationTimer("profile") as timer:
+            prof = profile_records(contract=contract, records=records)
+        op_metrics.record_profile(record_count=len(records))
+        op_metrics.record_timing("profile", timer.duration_ms)
     except Exception as e:
         logger.error(f"Failed to profile records: {e}")
         return EXIT_CLI_ERROR
@@ -172,15 +181,11 @@ def _report_output(report: dict[str, Any], out: str, fmt: str) -> None:
         print(text)
 
 
-def _report_json(obj: Any, out: str) -> None:
-    """Output JSON report to file or stdout."""
-    _report_output(obj, out, "json")
-
-
 def _cmd_check(args: argparse.Namespace) -> int:
     """Validate records and optionally check for drift."""
     input_path = Path(args.input).resolve()
     contract_path = Path(args.contract).resolve()
+    op_metrics = get_operation_metrics()
 
     logger.info(f"Loading contract from: {contract_path}")
 
@@ -204,9 +209,12 @@ def _cmd_check(args: argparse.Namespace) -> int:
     logger.info("Validating records...")
 
     try:
-        validation = validate_records(contract=contract, records=records)
+        with OperationTimer("validate") as val_timer:
+            validation = validate_records(contract=contract, records=records)
         failed = bool(validation)
         metrics.record_validation(passed=not bool(validation))
+        op_metrics.record_schema_check(passed=not bool(validation), record_count=len(records))
+        op_metrics.record_timing("validate", val_timer.duration_ms)
 
         if validation:
             logger.warning(f"Found {len(validation)} validation issues")
@@ -227,14 +235,17 @@ def _cmd_check(args: argparse.Namespace) -> int:
             current = profile_records(contract=contract, records=records)
 
             logger.info("Checking for drift...")
-            baseline_issues = drift_check(
-                baseline=baseline,
-                current=current,
-                max_missing_rate=float(args.max_missing),
-                max_mean_shift_sigma=float(args.max_mean_shift_sigma),
-            )
+            with OperationTimer("drift_check") as drift_timer:
+                baseline_issues = drift_check(
+                    baseline=baseline,
+                    current=current,
+                    max_missing_rate=float(args.max_missing),
+                    max_mean_shift_sigma=float(args.max_mean_shift_sigma),
+                )
             failed = failed or bool(baseline_issues)
             metrics.record_drift_check(drift_detected=bool(baseline_issues))
+            op_metrics.record_drift_check(drift_detected=bool(baseline_issues))
+            op_metrics.record_timing("drift_check", drift_timer.duration_ms)
 
             if baseline_issues:
                 logger.warning(f"Found {len(baseline_issues)} drift issues")
@@ -357,6 +368,7 @@ def main(argv: list[str] | None = None) -> int:
     """
     parser = build_parser()
     args = parser.parse_args(argv)
+    new_correlation_id()
 
     log_level = logging.DEBUG if args.verbose else logging.WARNING
 

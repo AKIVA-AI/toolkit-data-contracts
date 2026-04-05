@@ -1,12 +1,21 @@
 """
-Configuration management for Toolkit Data Contracts & Drift Detection
+Configuration management for Toolkit Data Contracts & Drift Detection.
+
+These settings are read from environment variables at import time and
+are available for programmatic API consumers. The CLI uses its own
+argparse-based flags (--limit, --max-missing, --format, etc.) which
+take precedence over these defaults.
 """
 
 import os
 
 
 class Config:
-    """Configuration settings for Data Contracts"""
+    """Environment-based configuration for programmatic API usage.
+
+    CLI flags (--limit, --max-missing, --max-mean-shift-sigma, --format,
+    --verbose, --log-format) override these defaults when using the CLI.
+    """
 
     # Inference Settings
     DEFAULT_SAMPLE_SIZE: int = int(os.getenv("DEFAULT_SAMPLE_SIZE", "1000"))
@@ -23,9 +32,6 @@ class Config:
     # Logging
     LOG_LEVEL: str = os.getenv("LOG_LEVEL", "INFO")
     LOG_FILE: str | None = os.getenv("LOG_FILE")
-
-    # Performance (reserved for future parallel processing)
-    # BATCH_SIZE and MAX_WORKERS were removed — use CLI --limit instead
 
     # Output
     OUTPUT_FORMAT: str = os.getenv("OUTPUT_FORMAT", "json")

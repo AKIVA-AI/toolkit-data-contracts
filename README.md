@@ -61,8 +61,12 @@ toolkit-contracts check --input new_batch.jsonl --contract contract.json --basel
 
 ## Exit Codes
 
-- `0` - Validation passed
-- `4` - Validation failed or drift detected
+| Code | Meaning |
+|------|---------|
+| `0`  | Success — validation passed, no drift detected |
+| `2`  | CLI error — invalid arguments, missing files, bad input |
+| `3`  | Unexpected error — unhandled exception, keyboard interrupt |
+| `4`  | Check failed — validation issues or drift detected |
 
 ## License
 
