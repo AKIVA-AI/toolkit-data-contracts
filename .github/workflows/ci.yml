@@ -54,7 +54,7 @@ jobs:
     - name: Run Bandit
       run: bandit -r src/ -f json -o bandit-report.json
     - name: Upload Bandit report
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: bandit-report
@@ -92,7 +92,7 @@ jobs:
     - name: Scan SBOM for vulnerabilities
       run: grype sbom:sbom.cdx.json --fail-on critical
     - name: Upload SBOM artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       if: always()
       with:
         name: sbom
@@ -115,7 +115,7 @@ jobs:
     - name: Check package
       run: twine check dist/*
     - name: Upload artifacts
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
         name: dist-packages
         path: dist/
