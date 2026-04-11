@@ -1,7 +1,7 @@
 # Data Contracts — Schema contracts and drift detection for ML/LLM data pipelines
 
 **Archetype:** 9 — Developer Tool / CLI Utility
-**Standards:** Akiva Build Standard v2.14
+**Standards:** See `akiva-enterprise-products/CLAUDE.md` for current Akiva Build Standard version and full standards reference.
 **Ontology ID:** TK-05
 
 ## Stack
