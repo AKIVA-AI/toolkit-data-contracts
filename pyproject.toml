@@ -36,7 +36,7 @@ toolkit-contracts = "toolkit_data_contracts_drift.cli:main"
 dev = [
   "pytest>=8.0.0",
   "pytest-cov>=5.0.0",
-  "ruff>=0.6.0",
+  "ruff>=0.15.10",
   "pyright>=1.1.380",
 ]
 
