@@ -3,9 +3,7 @@
 ## Install
 
 ```bash
-git clone https://github.com/AKIVA-AI/toolkit-data-contracts.git
-cd toolkit-data-contracts
-pip install .
+pip install toolkit-data-contracts
 toolkit-contracts --help
 ```
 
@@ -89,7 +87,11 @@ input, so `check` can gate a CI job directly.
 
 ## Run the example
 
+The example script is in this repository. From a clone:
+
 ```bash
+git clone https://github.com/AKIVA-AI/toolkit-data-contracts.git
+cd toolkit-data-contracts
 pip install -e ".[dev]"
 python examples/ml_pipeline_example.py
 ```
