@@ -1,5 +1,7 @@
 # toolkit-data-contracts
 
+[![PyPI](https://img.shields.io/pypi/v/toolkit-data-contracts.svg)](https://pypi.org/project/toolkit-data-contracts/)
+[![Python versions](https://img.shields.io/pypi/pyversions/toolkit-data-contracts.svg)](https://pypi.org/project/toolkit-data-contracts/)
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 **Contracts for LLM-shaped data.** A small, dependency-free Python CLI that
@@ -44,7 +46,7 @@ streaming pass. If you need warehouse connectors or a full suite of statistical 
 | LLM presets | Working | `openai-chat`, `anthropic-messages`, `tool-calls`, `sft`, `dpo`, `rag-chunks`. Tool-call arguments are validated against each tool's JSON Schema. See [LLM presets](#llm-presets). |
 | ODCS v3 import / export | Working | `odcs export` writes ODCS v3.1.0 (validated against the official ODCS JSON Schema in tests); `odcs import` reads ODCS v3.0-v3.2 including v3.2 `enum`, `map` and `vector`. See [ODCS](#odcs-open-data-contract-standard). |
 | Report envelope v1 (`check` and `diff` JSON output) | Working | in-toto Statement v1, canonical JSON, input digests; see [Report format](#report-format). |
-| PyPI package | Planned | Not published yet; install from source. The release workflow is ready and waits on the one-time PyPI setup in [RELEASING.md](RELEASING.md). |
+| PyPI package | Working | `pip install toolkit-data-contracts`; see [Install](#install). |
 
 ## Install
 
@@ -53,17 +55,24 @@ Requires Python 3.10+. The core has no runtime dependencies. Optional extras:
 `lang` (langdetect, for language drift), `parquet` (pyarrow, for Parquet and CSV input).
 
 ```bash
-git clone https://github.com/AKIVA-AI/toolkit-data-contracts.git
-cd toolkit-data-contracts
-pip install .            # or ".[odcs,tiktoken,lang,parquet]"; pip install -e ".[dev]" for development
+pip install toolkit-data-contracts
+pip install "toolkit-data-contracts[odcs,tiktoken,lang,parquet]"   # with every optional extra
 toolkit-contracts --help
 ```
+
+To work on the code, see [Development](#development).
 
 ## Five-minute example
 
 `examples/data/ultrachat_200k_test_sft_40.jsonl` holds 40 chat rows from the
 public [UltraChat 200k](https://huggingface.co/datasets/HuggingFaceH4/ultrachat_200k)
-dataset (MIT license; see `examples/data/README.md`). From the repository root:
+dataset (MIT license; see `examples/data/README.md`). Run the steps from the
+root of a clone of this repository, which holds the sample:
+
+```bash
+git clone https://github.com/AKIVA-AI/toolkit-data-contracts.git
+cd toolkit-data-contracts
+```
 
 ```bash
 # 1. Does the file have the shape trainers expect for SFT?
@@ -294,7 +303,7 @@ regenerate the baseline to get nested paths and categorical counts.
 datacontract-cli. Convert in either direction:
 
 ```bash
-pip install ".[odcs]"    # PyYAML; .json output and input work without it
+pip install "toolkit-data-contracts[odcs]"    # PyYAML; .json output and input work without it
 toolkit-contracts odcs export --contract contract.json --out contract.odcs.yaml --name chat_sft
 toolkit-contracts odcs import --input contract.odcs.yaml --out contract.json [--object NAME]
 ```
@@ -379,7 +388,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0          # the action reads the base version with git show
-      - uses: AKIVA-AI/toolkit-data-contracts@main   # pin a release tag once one exists
+      - uses: AKIVA-AI/toolkit-data-contracts@v1.0.0
         with:
           contract: contracts/chat.contract.json
           mode: backward
@@ -395,7 +404,7 @@ JSON report path as the `report` output. Pass `old` and `new` instead of
 ```yaml
 - name: Data contract gate
   run: |
-    pip install git+https://github.com/AKIVA-AI/toolkit-data-contracts.git
+    pip install toolkit-data-contracts
     toolkit-contracts check --input data/batch.jsonl \
       --contract contracts/contract.json --baseline profiles/baseline.profile.json
 ```
@@ -412,7 +421,18 @@ docker run --rm -v "$PWD/data:/app/data" toolkit-data-contracts \
 
 ## Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). In short: `pytest`, `ruff check src/ tests/`, `pyright`.
+Install from source in editable mode, with the test, lint and type-check tools:
+
+```bash
+git clone https://github.com/AKIVA-AI/toolkit-data-contracts.git
+cd toolkit-data-contracts
+pip install -e ".[dev]"
+pytest
+ruff check src/ tests/
+pyright
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full setup.
 
 ## Contributing and security
 

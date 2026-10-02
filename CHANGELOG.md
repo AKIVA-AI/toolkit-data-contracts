@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-09-26
 
+First release on PyPI (published 2026-10-02): `pip install toolkit-data-contracts`.
+
 Contracts for LLM-shaped data. Highlights: JSON Schema contracts with nested
 validation and drift, LLM presets with tool-call argument checks, ODCS v3
 import/export, text/token/language/embedding drift, a breaking-change `diff`
