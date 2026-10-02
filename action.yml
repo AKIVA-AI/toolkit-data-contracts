@@ -1,0 +1,87 @@
+name: toolkit-data-contracts diff
+description: >-
+  Classify changes to a data contract as breaking or non-breaking and annotate
+  the pull request. Fails the step when a breaking change is found.
+author: AKIVA AI, LLC
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  contract:
+    description: >-
+      Path of the contract in the repository. The base version is read with
+      `git show <base-ref>:<contract>` (check out with fetch-depth: 0).
+    required: false
+    default: ""
+  base-ref:
+    description: Git ref of the base version. Defaults to the pull request base commit.
+    required: false
+    default: ${{ github.event.pull_request.base.sha }}
+  old:
+    description: Explicit path of the old contract (instead of contract + base-ref).
+    required: false
+    default: ""
+  new:
+    description: Explicit path of the new contract (defaults to `contract`).
+    required: false
+    default: ""
+  mode:
+    description: "backward (default: tightening is breaking), forward (loosening is breaking) or full."
+    required: false
+    default: backward
+  python-version:
+    description: Python version used to run the tool.
+    required: false
+    default: "3.12"
+
+outputs:
+  report:
+    description: Path of the JSON report (report envelope v1).
+    value: ${{ steps.diff.outputs.report }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v7
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Install toolkit-data-contracts
+      shell: bash
+      run: python -m pip install --quiet "${GITHUB_ACTION_PATH}"
+    - id: diff
+      name: Diff contract
+      shell: bash
+      env:
+        INPUT_CONTRACT: ${{ inputs.contract }}
+        INPUT_BASE_REF: ${{ inputs.base-ref }}
+        INPUT_OLD: ${{ inputs.old }}
+        INPUT_NEW: ${{ inputs.new }}
+        INPUT_MODE: ${{ inputs.mode }}
+      run: |
+        set -euo pipefail
+        new="${INPUT_NEW:-$INPUT_CONTRACT}"
+        old="$INPUT_OLD"
+        if [ -z "$new" ]; then
+          echo "::error title=toolkit-data-contracts::set 'contract' or 'new'"
+          exit 2
+        fi
+        if [ -z "$old" ]; then
+          if [ -z "$INPUT_BASE_REF" ]; then
+            echo "::error title=toolkit-data-contracts::set 'old', or 'base-ref' outside pull requests"
+            exit 2
+          fi
+          old="$RUNNER_TEMP/contract-base.json"
+          if ! git show "${INPUT_BASE_REF}:${INPUT_CONTRACT}" > "$old" 2>/dev/null; then
+            echo "No base version of ${INPUT_CONTRACT} at ${INPUT_BASE_REF}; nothing to compare." \
+              >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+        fi
+        report="$RUNNER_TEMP/contract-diff.json"
+        echo "report=$report" >> "$GITHUB_OUTPUT"
+        toolkit-contracts diff --old "$old" --new "$new" --mode "$INPUT_MODE" \
+          --format markdown >> "$GITHUB_STEP_SUMMARY" || true
+        toolkit-contracts diff --old "$old" --new "$new" --mode "$INPUT_MODE" \
+          --out "$report" || true
+        toolkit-contracts diff --old "$old" --new "$new" --mode "$INPUT_MODE" --format github

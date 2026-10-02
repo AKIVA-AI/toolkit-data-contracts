@@ -1,0 +1,33 @@
+FROM python:3.11-slim
+
+LABEL maintainer="Toolkit Contributors"
+LABEL description="Data contracts and drift checks for JSONL data"
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy source first
+COPY pyproject.toml .
+COPY src/ ./src/
+COPY README.md .
+
+# Install package
+RUN pip install --no-cache-dir -e . || pip install --no-cache-dir .
+
+# Create non-root user
+RUN useradd -m -u 1000 contracts && chown -R contracts:contracts /app
+USER contracts
+
+# Create data directory
+RUN mkdir -p /app/data
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "from toolkit_data_contracts_drift import __version__; print(__version__)" || exit 1
+
+# Default command - show help
+CMD ["toolkit-contracts", "--help"]

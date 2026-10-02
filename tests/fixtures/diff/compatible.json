@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "schema": {
+    "type": "object",
+    "required": ["messages"],
+    "properties": {
+      "messages": {
+        "type": "array",
+        "description": "Chat turns, oldest first.",
+        "items": {
+          "type": "object",
+          "required": ["role", "content"],
+          "properties": {
+            "role": {"enum": ["system", "user", "assistant", "tool"]},
+            "content": {"type": ["string", "null"]}
+          }
+        }
+      }
+    }
+  }
+}
